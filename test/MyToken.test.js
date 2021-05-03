@@ -18,8 +18,13 @@ contract("Token Test", async (accounts) => {
 
     const [deploymentAccount, recipient, anotherAccount] = accounts;
 
+    beforeEach( async() => {
+        this.myToken = await Token.new(100000);
+
+    });
+
     it("all tokens should be in my account", async ()=>{
-        let instance = await Token.deployed();
+        let instance = this.myToken;
         let totalSupply = await instance.totalSupply();
         // console.log(totalSupply);
         // console.log(await instance.balanceOf(recipient));
@@ -30,19 +35,9 @@ contract("Token Test", async (accounts) => {
     });
 
 
-    it("is not possible to send more tokens than available in total", async ()=>{
-        let instance = await Token.deployed();
-        let balanceOfDeployer = await instance.balanceOf(deploymentAccount);
-
-        expect(instance.transfer(recipient, balanceOfDeployer+1)).to.eventually.be.rejected;
-
-        expect( instance.balanceOf(deploymentAccount)).to.eventually.be.a.bignumber.equal(balanceOfDeployer);
-        expect( instance.balanceOf(recipient)).to.eventually.be.a.bignumber.equal(new BN(0));
-    });
-
     it("is possible to send tokens between account", async() => {
         const sendTokens = new BN("1");
-        let instance = await Token.deployed();
+        let instance = this.myToken;
         let totalSupply = await instance.totalSupply();
         let initialRecipientBalance = await instance.balanceOf(recipient);
 
@@ -56,5 +51,16 @@ contract("Token Test", async (accounts) => {
 
     });
 
+
+
+    it("is not possible to send more tokens than available in total", async ()=>{
+        let instance = this.myToken;
+        let balanceOfDeployer = await instance.balanceOf(deploymentAccount);
+
+        expect(instance.transfer(recipient, balanceOfDeployer+1)).to.eventually.be.rejected;
+
+        expect( instance.balanceOf(deploymentAccount)).to.eventually.be.a.bignumber.equal(balanceOfDeployer);
+        expect( instance.balanceOf(recipient)).to.eventually.be.a.bignumber.equal(new BN(0));
+    });
 
 });
