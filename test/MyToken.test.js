@@ -19,7 +19,7 @@ contract("Token Test", async (accounts) => {
     const [deploymentAccount, recipient, anotherAccount] = accounts;
 
     beforeEach( async() => {
-        this.myToken = await Token.new(100000);
+        this.myToken = await Token.new(process.env.INITIAL_TOKENS);
 
     });
 
