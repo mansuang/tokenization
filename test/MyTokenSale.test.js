@@ -28,11 +28,11 @@ contract("Token Sale Test", async (accounts) => {
         let tokenInstance = await Token.deployed();
         let tokenSaleInstance = await MyTokenSale.deployed();
         let balanceBefore = await tokenInstance.balanceOf(deploymentAccount);
-        expect(tokenSaleInstance.sendTransaction({from: deploymentAccount, value: web3.utils.toWei("1","wei")})).to.be.fulfilled;
-        // let newBalance = await tokenInstance.balanceOf(deploymentAccount);
+        await tokenSaleInstance.sendTransaction({from: deploymentAccount, value: web3.utils.toWei("1","wei")});
 
-        // console.log(newBalance, balanceBefore.add(new BN(1)) );
-        // return expect(newBalance).to.be.a.bignumber.equal(balanceBefore.add(new BN(1)));
+        // expect().to.eventually.be.fulfilled;
+
+        return expect(tokenInstance.balanceOf(deploymentAccount)).to.eventually.be.a.bignumber.equal(balanceBefore.add(new BN(1)));
     });
 
 });
