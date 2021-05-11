@@ -47,6 +47,24 @@ class App extends Component {
     }
   };
 
+  handleInputChange = (event) => {
+    const target = event.target;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    const name = target.name;
+    this.setState({
+      [name]: value
+    });
+
+  }
+
+  handleKycWhitelisting =  async() => {
+    await this.kycInstance.methods.setKycCompleted(this.state.kycAddress).send({
+      from: this.accounts[0] 
+    });
+
+    alert("KYC for "+this.state.kycAddress+" is completed");
+
+  }
 
   render() {
     if (!this.state.loaded) {
@@ -54,12 +72,12 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
+        <h1>StarDucks Cappucino Token Sale</h1>
+        <p>Get your Tokens today</p>
+        <h2>Kyc Whitelisting</h2>
         <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
+          Address to allow: <input type="text" name="kycAddress" value={this.state.kycAddress} onChange={this.handleInputChange} />
+          <button type="button" onClick={this.handleKycWhitelisting} >Add to Whitelist</button>
         </p>
         <p>
           Try changing the value stored on <strong>line 40</strong> of App.js.
