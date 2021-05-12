@@ -7,7 +7,7 @@ import getWeb3 from "./getWeb3";
 import "./App.css";
 
 class App extends Component {
-  state = { loaded: false };
+  state = { loaded: false, kycAddress: "0x23...", tokenSaleAddress: null, userToken: "--" };
 
   componentDidMount = async () => {
     try {
@@ -20,7 +20,7 @@ class App extends Component {
       // Get the contract instance.
       this.networkId = await this.web3.eth.net.getId();
 
-      this.SaletokenInstance = new this.web3.eth.Contract(
+      this.tokenInstance = new this.web3.eth.Contract(
         MyToken.abi,
         MyToken.networks[this.networkId] && MyToken.networks[this.networkId].address,
       );
@@ -37,7 +37,8 @@ class App extends Component {
 
       // Set this.web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ loaded: true});
+      this.listenToTokenTransfer();
+      this.setState({ loaded: true, tokenSaleAddress: MyTokenSale.networks[this.networkId].address}, this.updateUserTokens);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -46,6 +47,22 @@ class App extends Component {
       console.error(error);
     }
   };
+
+  updateUserTokens = async () => {
+    console.log(this.accounts[0]);
+    let userTokens = await this.tokenInstance.methods.balanceOf(this.accounts[0]).call();
+    console.log(userTokens);
+    this.setState({userTokens: userTokens});
+
+  }
+
+  listenToTokenTransfer = () => {
+    this.tokenInstance.events.Transfer({to: this.accounts[0]}).on("data", this.updateUserTokens);
+  }
+
+  handleBuyTokens = async () => {
+    await this.tokenSaleInstance.methods.buyTokens(this.accounts[0]).send({from: this.accounts[0], value: this.web3.utils.toWei("1","wei")})
+  }
 
   handleInputChange = (event) => {
     const target = event.target;
@@ -79,10 +96,12 @@ class App extends Component {
           Address to allow: <input type="text" name="kycAddress" value={this.state.kycAddress} onChange={this.handleInputChange} />
           <button type="button" onClick={this.handleKycWhitelisting} >Add to Whitelist</button>
         </p>
+        <h2>Buy Tokens</h2>
         <p>
-          Try changing the value stored on <strong>line 40</strong> of App.js.
+          If you want to buy tokens, wend Wei to this address: {this.state.tokenSaleAddress}
         </p>
-        <div>The stored value is: {this.state.storageValue}</div>
+        <div>You currently have: {this.state.userTokens} CAPPU Tokens</div>
+        <button type="button" onClick={this.handleBuyTokens}>Buy more tokens</button>
       </div>
     );
   }
