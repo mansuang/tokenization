@@ -3,6 +3,7 @@ import MyToken from "./contracts/MyToken.json";
 import MyTokenSale from "./contracts/MyTokenSale.json";
 import KycContract from "./contracts/KycContract.json";
 import getWeb3 from "./getWeb3";
+import detectEthereumProvider from '@metamask/detect-provider';
 
 import "./App.css";
 
@@ -11,6 +12,17 @@ class App extends Component {
 
   componentDidMount = async () => {
     try {
+      const provider = await detectEthereumProvider();
+
+      if (! provider) {
+        console.log('Please install MetaMask!');
+        alert('Please install metamask!');
+      }
+      if (provider !== window.ethereum) {
+        alert('Do you have multiple wallets installed?');
+      }
+
+      console.log( window.ethereum );
       // Get network provider and web3 instance.
       this.web3 = await getWeb3();
 
@@ -38,6 +50,8 @@ class App extends Component {
       // Set this.web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       this.listenToTokenTransfer();
+      this.listenAccountChange();
+      // window.ethereum.on('accountsChanged', this.updateUserTokens);
       this.setState({ loaded: true, tokenSaleAddress: MyTokenSale.networks[this.networkId].address}, this.updateUserTokens);
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -53,6 +67,23 @@ class App extends Component {
     let userTokens = await this.tokenInstance.methods.balanceOf(this.accounts[0]).call();
     console.log(userTokens);
     this.setState({userTokens: userTokens});
+
+  }
+
+
+  listenAccountChange = () => {
+    window.ethereum.on('accountsChanged',  async (switchedAccounts) => {
+      console.log('account changed to '+switchedAccounts[0]);
+      if( this.accounts[0] != switchedAccounts[0])
+      {
+        this.accounts = switchedAccounts;
+      }
+      this.updateUserTokens();
+    });
+
+    window.ethereum.on('chainChanged',  async (switchedAccounts) => {
+      window.location.reload();
+    }); 
 
   }
 
@@ -106,5 +137,6 @@ class App extends Component {
     );
   }
 }
+
 
 export default App;
